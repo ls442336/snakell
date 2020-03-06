@@ -6,6 +6,7 @@ module Snake (
     getSnakeSize,
     setSnakeSize,
     setSnakeDir,
+    getSnakeDir,
     push,
     pop,
     drawSnake,

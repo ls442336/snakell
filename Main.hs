@@ -21,15 +21,15 @@ initGame :: IO (SnakeGame)
 initGame = do
     s <- newSnake
     s <- push s (0, 0)
-    s <- push s (-32, 0)
-    s <- setSnakeSize s 32
+    s <- push s (-16, 0)
+    s <- setSnakeSize s 16
     t <- ticks
     fx <- randomIO :: IO CInt
     fy <- randomIO :: IO CInt
     snakeSize <- getSnakeSize s
 
-    let x = ((mod fx ((640 - snakeSize) `div` snakeSize)) * snakeSize)
-    let y = (mod fy ((480 - snakeSize) `div` snakeSize)) * snakeSize
+    let x = ((mod fx ((800 - snakeSize) `div` snakeSize)) * snakeSize)
+    let y = (mod fy ((600 - snakeSize) `div` snakeSize)) * snakeSize
 
     return (SnakeGame {snake = s, fps = 10, timestamp = t, food = (x, y)})
 
@@ -86,7 +86,8 @@ appLoop renderer s = do
           _ -> False
       rightArrowPressed = any eventIsRightArrowPress events
 
-  s <- if downArrowPressed
+  d <- (getSnakeDir (snake s))
+  s <- if downArrowPressed && d /= (0, -1)
     then do
       _s <- setSnakeDir (snake s) (0, 1)
       s <- updateSnakeGame (s {snake = _s})
@@ -94,7 +95,8 @@ appLoop renderer s = do
     else
       do return (s)
 
-  s <- if upArrowPressed
+  d <- (getSnakeDir (snake s))
+  s <- if upArrowPressed && d /= (0, 1)
     then do
       _s <- setSnakeDir (snake s) (0, -1)
       s <- updateSnakeGame (s {snake = _s})
@@ -102,7 +104,8 @@ appLoop renderer s = do
     else
       do return (s)
 
-  s <- if leftArrowPressed
+  d <- (getSnakeDir (snake s))
+  s <- if leftArrowPressed &&  d /= (1, 0)
     then do
       _s <- setSnakeDir (snake s) (-1, 0)
       s <- updateSnakeGame (s {snake = _s})
@@ -110,7 +113,8 @@ appLoop renderer s = do
     else
       do return (s)
   
-  s <- if rightArrowPressed
+  d <- (getSnakeDir (snake s))
+  s <- if rightArrowPressed && d /= (-1, 0)
     then do
       _s <- setSnakeDir (snake s) (1, 0)
       s <- updateSnakeGame (s {snake = _s})
@@ -150,13 +154,14 @@ appLoop renderer s = do
           b <- getSnakeBody __s
 
           s <- updateSnakeGame (s {fps = (fps s) + 1})
-          s <- updateSnakeGame (s {snake = __s, food = ((mod fx ((640 - snakeSize) `div` snakeSize)) * snakeSize, (mod fy ((480 - snakeSize) `div` snakeSize)) * snakeSize)})
+          s <- updateSnakeGame (s {snake = __s, food = ((mod fx ((800 - snakeSize) `div` snakeSize)) * snakeSize, (mod fy ((600 - snakeSize) `div` snakeSize)) * snakeSize)})
           return s
         else
           do return s
 
+      snakeSize <- getSnakeSize (snake s)
       let hasCollidedWithItself ((a, b):xs) = or [a == c && b == d | (c, d) <- tail xs]
-      let hasCollidedWithWall ((a, b):xs) = or [a < 0, a > 635, b < 0, b > 475]
+      let hasCollidedWithWall ((a, b):xs) = or [a < 0, a + snakeSize > 800, b < 0, b + snakeSize > 600]
 
       snakeBody <- getSnakeBody (snake s)
 
